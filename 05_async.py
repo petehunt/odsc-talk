@@ -1,32 +1,32 @@
-from helpers import cache_to_s3_async
+from helpers import memoize_to_s3_async
 import duckdb
 import pandas as pd
 from datetime import date
 import asyncio
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/raw_customers.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/raw_customers.csv")
 async def raw_customers(date):
     return pd.read_csv(
         "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv"
     )
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/raw_orders.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/raw_orders.csv")
 async def raw_orders(date):
     return pd.read_csv(
         "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv"
     )
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/raw_payments.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/raw_payments.csv")
 async def raw_payments(date):
     return pd.read_csv(
         "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv"
     )
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/stg_customers.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/stg_customers.csv")
 async def stg_customers(date):
     source = await raw_customers(date)
     return duckdb.query(
@@ -34,7 +34,7 @@ async def stg_customers(date):
     ).to_df()
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/stg_orders.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/stg_orders.csv")
 async def stg_orders(date):
     source = await raw_orders(date)
     return duckdb.query(
@@ -42,7 +42,7 @@ async def stg_orders(date):
     ).to_df()
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/stg_payments.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/stg_payments.csv")
 async def stg_payments(date):
     source = await raw_payments(date)
     return duckdb.query(
@@ -50,7 +50,7 @@ async def stg_payments(date):
     ).to_df()
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/customers.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/customers.csv")
 async def customers(date):
     customers, orders, payments = await asyncio.gather(
         stg_customers(date), stg_orders(date), stg_payments(date)
@@ -97,7 +97,7 @@ select * from final"""
     ).to_df()
 
 
-@cache_to_s3_async(lambda date: f"s3://mybucket/{date}/orders.csv")
+@memoize_to_s3_async(lambda date: f"s3://mybucket/{date}/orders.csv")
 async def orders(date):
     payment_methods = ["credit_card", "coupon", "bank_transfer", "gift_card"]
     orders, payments = await asyncio.gather(stg_orders(date), stg_payments(date))

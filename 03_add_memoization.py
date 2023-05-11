@@ -1,30 +1,30 @@
-from helpers import cache_to_s3
+from helpers import memoize_to_s3
 import duckdb
 import pandas as pd
 
 
-@cache_to_s3("s3://mybucket/raw_customers.csv")
+@memoize_to_s3("s3://mybucket/raw_customers.csv")
 def raw_customers():
     return pd.read_csv(
         "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_customers.csv"
     )
 
 
-@cache_to_s3("s3://mybucket/raw_orders.csv")
+@memoize_to_s3("s3://mybucket/raw_orders.csv")
 def raw_orders():
     return pd.read_csv(
         "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_orders.csv"
     )
 
 
-@cache_to_s3("s3://mybucket/raw_payments.csv")
+@memoize_to_s3("s3://mybucket/raw_payments.csv")
 def raw_payments():
     return pd.read_csv(
         "https://raw.githubusercontent.com/dbt-labs/jaffle_shop/main/seeds/raw_payments.csv"
     )
 
 
-@cache_to_s3("s3://mybucket/stg_customers.csv")
+@memoize_to_s3("s3://mybucket/stg_customers.csv")
 def stg_customers():
     source = raw_customers()
     return duckdb.query(
@@ -32,7 +32,7 @@ def stg_customers():
     ).to_df()
 
 
-@cache_to_s3("s3://mybucket/stg_orders.csv")
+@memoize_to_s3("s3://mybucket/stg_orders.csv")
 def stg_orders():
     source = raw_orders()
     return duckdb.query(
@@ -40,7 +40,7 @@ def stg_orders():
     ).to_df()
 
 
-@cache_to_s3("s3://mybucket/stg_payments.csv")
+@memoize_to_s3("s3://mybucket/stg_payments.csv")
 def stg_payments():
     source = raw_payments()
     return duckdb.query(
@@ -48,7 +48,7 @@ def stg_payments():
     ).to_df()
 
 
-@cache_to_s3("s3://mybucket/customers.csv")
+@memoize_to_s3("s3://mybucket/customers.csv")
 def customers():
     customers = stg_customers()
     orders = stg_orders()
@@ -95,7 +95,7 @@ select * from final"""
     ).to_df()
 
 
-@cache_to_s3("s3://mybucket/orders.csv")
+@memoize_to_s3("s3://mybucket/orders.csv")
 def orders():
     payment_methods = ["credit_card", "coupon", "bank_transfer", "gift_card"]
     orders = stg_orders()
