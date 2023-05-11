@@ -10,6 +10,7 @@ dill==0.3.2
 dnslib==0.9.23
 dnspython==2.3.0
 docutils==0.16
+duckdb==0.7.1
 ecdsa==0.18.0
 jmespath==1.0.1
 joblib==1.2.0
