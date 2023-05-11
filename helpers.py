@@ -3,6 +3,14 @@ import io
 import functools
 import pandas as pd
 import asyncio
+import contextvars
+
+
+async def to_thread(func, /, *args, **kwargs):
+    loop = asyncio.events.get_running_loop()
+    ctx = contextvars.copy_context()
+    func_call = functools.partial(ctx.run, func, *args, **kwargs)
+    return await loop.run_in_executor(None, func_call)
 
 
 def cache_to_s3(prefix):
@@ -66,7 +74,7 @@ def s3_read_csv(url):
 
 
 async def s3_read_csv_async(url):
-    return await asyncio.to_thread(s3_read_csv, url)
+    return await to_thread(s3_read_csv, url)
 
 
 def s3_exists(url):
@@ -79,7 +87,7 @@ def s3_exists(url):
 
 
 async def s3_exists_async(url):
-    return await asyncio.to_thread(s3_exists, url)
+    return await to_thread(s3_exists, url)
 
 
 def s3_write_csv(url, dataframe):
@@ -88,7 +96,7 @@ def s3_write_csv(url, dataframe):
 
 
 async def s3_write_csv_async(url, dataframe):
-    return await asyncio.to_thread(s3_write_csv, url, dataframe)
+    return await to_thread(s3_write_csv, url, dataframe)
 
 
 # no longer used!
@@ -99,7 +107,7 @@ async def s3_write_csv_async(url, dataframe):
 
 
 # async def s3_read_pickle_async(url):
-#     return await asyncio.to_thread(s3_read_pickle, url)
+#     return await to_thread(s3_read_pickle, url)
 
 
 # def s3_write_pickle(url, value):
@@ -108,4 +116,4 @@ async def s3_write_csv_async(url, dataframe):
 
 
 # async def s3_write_pickle_async(url, value):
-#     return await asyncio.to_thread(s3_write_pickle, url, value)
+#     return await to_thread(s3_write_pickle, url, value)
